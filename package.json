@@ -1,0 +1,37 @@
+{
+  "name": "redstar",
+  "version": "1.0.0",
+  "description": "red star network system",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=dev nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gbox3d/redstar.git"
+  },
+  "keywords": [
+    "udp;socketio;esp8266"
+  ],
+  "author": "gbox3d",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gbox3d/redstar/issues"
+  },
+  "homepage": "https://github.com/gbox3d/redstar#readme",
+  "dependencies": {
+    "@babel/cli": "^7.17.0",
+    "@babel/core": "^7.17.2",
+    "@babel/node": "^7.16.8",
+    "@babel/preset-env": "^7.16.11",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.2",
+    "fs-ext": "^2.0.0",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^2.0.15"
+  }
+}
