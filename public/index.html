@@ -6,8 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>socketio sample</title>
-    <!-- <script src="/socket.io/socket.io.js"></script> -->
-
+    <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 
 </head>
@@ -16,12 +15,25 @@
 
     <header>
         <div id="socketStatus">conneting... server</div>
-        
+
     </header>
 
     <main>
+        <div id="deviceListUI">
+            <ul></ul>
+        </div>
 
-        <button>ok</button>
+        <input id="deviceID" disabled />
+
+        <div id="controlUI">
+            <button id="btnOn">on</button>
+            <button id="btnOff"> off</button>
+        </div>
+        <div id="waitUI" hidden >
+            <h5> 명령 전송중...</h5>
+            <button id="cancel" >cancel</button>
+        </div>
+
 
     </main>
 

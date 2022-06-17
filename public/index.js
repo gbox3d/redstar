@@ -1,113 +1,109 @@
-
-import './socket.io/socket.io.js';
-
 const socket = io();
 
 globalThis.theApp = {
     socket: socket,
-    currentRoomName: ''
 }
 
 theApp.test = {
-    reqRoomsInfo: async () => {
-        socket.emit('reqRooms', (evt) => {
-            console.log(evt);
-        });
-    }
-
 }
 
 
 async function main() {
-    // console.log(socket.connected);
 
-    const enterRoomUI = document.querySelector('#enterRoom');
-    const chatUI = document.querySelector('#chatUI');
-    const msgTxtList = document.querySelector('#msgTxtList');
-    const loginUI = document.querySelector('#loginUI');
+    theApp.deviceListUI = document.querySelector("#deviceListUI")
+    theApp.socketStatus = document.querySelector('#socketStatus')
+    theApp.deviceId = document.querySelector('#deviceID')
 
+    theApp.controlUI = document.querySelector('#controlUI')
+    theApp.waitUI = document.querySelector('#waitUI')
 
-    function addMsgTextList(msg) {
-        const _ul = msgTxtList.querySelector('ul');
-        const li = document.createElement('li');
-        li.innerText = msg;
-        _ul.appendChild(li);
+    ////////////////////////////////////////////////////////////////////////////////
+    // client-side
 
-        console.log(msgTxtList.scrollHeight)
-        _ul.scrollTop = _ul.scrollHeight; // scroll to bottom
+    function updateDeviceList(list) {
+
+        let _ul = theApp.deviceListUI.querySelector('ul')
+        _ul.innerHTML = ''
+
+        for (const [key, value] of Object.entries(list)) {
+            let _li = document.createElement('li')
+            _li.innerText = `${key} , ${value.dev_type} , ${value.last_address} , ${value.last_port} ,${value.latency}`
+            _li.dataset.devId = key
+            _ul.appendChild(_li)
+        }
 
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // client-side
+
     socket.on("connect", () => {
         console.log("connected");
-        // console.log(socket.rooms);
-        document.querySelector('#socketStatus').innerHTML =
-            `<p>socket.id: ${socket.id}</p> <p>connected: ${socket.connected ? "success" : "false"}</p>`;
-        // enterRoomUI.hidden = false;
-        loginUI.hidden = false;
+        theApp.socketStatus.innerText = 'connected'
+
+        socket.emit('getDeviceList', (playload) => {
+            console.log(playload)
+            updateDeviceList(playload.devList)
+        });
     });
 
     socket.on("disconnect", () => {
         // console.log(socket.id); // undefined
     });
 
-    socket.on("joinRoom", (evt) => {
-        chatUI.querySelector('#userCount').innerText = evt.userCount;
-        addMsgTextList(`${evt.user.username} joined`);
+    //////////////
+    ///
+    document.querySelector('#btnOn').addEventListener('click', async () => {
+        theApp.controlUI.hidden = true
+        theApp.waitUI.hidden = false
 
-    });
-    socket.on("disconnectUser", (evt) => {
-        console.log(evt);
-
-        socket.emit('reqRoomInfo', theApp.currentRoomName, (evt) => {
-            console.log(evt);
-            chatUI.querySelector('#userCount').innerText = evt.userCount;
+        await new Promise((resolve, reject) => {
+            socket.emit('nutRelay', {
+                cmd: 'on',
+                devId: theApp.deviceId.value
+            }, (chipId) => {
+                console.log(chipId)
+                resolve()
+            });
         });
-    });
 
-    socket.on('message', (evt) => {
-        console.log(evt);
-        addMsgTextList( `${evt.user.username} : ${evt.msg}` );
-    });
+        theApp.controlUI.hidden = false
+        theApp.waitUI.hidden = true
+    })
+    document.querySelector('#btnOff').addEventListener('click', async () => {
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // ui handlers
+        theApp.controlUI.hidden = true
+        theApp.waitUI.hidden = false
 
-    document.querySelector("#loginBtn").addEventListener('click', (evt) => {
-        const userName = document.querySelector('#userName').value;
-        socket.emit('login', {
-            name : userName
-        }, (evt) => {
-            console.log(evt);
-            loginUI.hidden = true;
-            enterRoomUI.hidden = false;
-            document.querySelector('#socketStatus').innerText =
-            `socket.id: ${socket.id} userName: ${userName}`;
+        await new Promise((resolve, reject) => {
+            socket.emit('nutRelay', {
+                cmd: 'off',
+                devId: theApp.deviceId.value
+            }, (chipId) => {
+                console.log(chipId)
+                resolve();
+            })
         });
-    });
 
-    enterRoomUI.querySelector('button').addEventListener('click', async () => {
-        const roomName = enterRoomUI.querySelector('input').value;
-        enterRoomUI.hidden = true;
-        chatUI.hidden = false;
+        theApp.controlUI.hidden = false
+        theApp.waitUI.hidden = true
 
-        socket.emit('enterRoom', roomName, (evt) => {
-            console.log(evt);
-            chatUI.querySelector('#info').innerText = `${evt.roomName}`;
-            theApp.currentRoomName = roomName;
-            chatUI.querySelector('#userCount').innerText = evt.userCount;
-        });
-    });
 
-    chatUI.querySelector('#sendMsg').addEventListener('click', async () => {
-        const msg = chatUI.querySelector('#msg').value;
-        chatUI.querySelector('#msg').value = '';
-        addMsgTextList(msg);
-        socket.emit('message',theApp.currentRoomName,msg);
-    });
+    })
+
+    theApp.waitUI.querySelector('#cancel').addEventListener('click', () => {
+        theApp.controlUI.hidden = false
+        theApp.waitUI.hidden = true
+
+    })
+
+    theApp.deviceListUI.querySelector('ul').addEventListener('click', (e) => {
+        console.log(e)
+        if (e.target.tagName == 'LI') {
+            let _devId = e.target.dataset.devId
+            theApp.deviceId.value = _devId
+        }
+    })
+
 
 }
 

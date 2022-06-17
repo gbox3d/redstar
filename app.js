@@ -46,9 +46,54 @@ ioServer.on("connection", (socket) => {
 
   console.log('connected', socket.id, socket.handshake.address);
 
-  socket.onAny((eventName, evt) => {
+  socket.onAny((eventName, playload) => {
     // ...
-    console.log(`eventName: ${eventName}`,evt);
+    if( typeof playload !== 'function' ) {
+      console.log(`eventName: ${eventName},socketid:${socket.id}`,playload);
+    }
+    else {
+      console.log(`eventName: ${eventName},socketid:${socket.id}`);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("disconnected", socket.id);
+  });
+
+  socket.on("getDeviceList", (done) => {
+
+    done({
+      devList : udpApp.getDeviceList()
+    });
+
+  });
+
+  socket.on("nutRelay", (packet,done) => {
+
+    switch(packet.cmd) {
+      case 'on':
+        udpApp.onCallBackRelayOn = (chipid) => {
+          // theApp.onCallBackRelayOn = null;
+          console.log('on ok' + chipid);
+          done({
+            chipid : chipid
+          });
+          
+        }
+        udpApp.turnOnRelay(packet.devId)
+      break;
+      case 'off':
+        udpApp.onCallBackRelayOff = (chipid) => {
+          // theApp.onCallBackRelayOff = null;
+          done({
+            chipid : chipid
+          });
+        }
+        udpApp.turnOffRelay(packet.devId)
+      break;
+    }
+    
+
   });
 
 });
